@@ -22,7 +22,7 @@ whatever you like and make the Dockerfile your own.
 Run the following command:
 
 ```
-curl -sL https://raw.githubusercontent.com/steveortiz/dockerize-your-shell/master/setup.sh | bash -
+curl -sL https://raw.githubusercontent.com/jessewiles/dockerize-your-shell/windows/setup.sh | bash - && source ~/.bashrc
 ```
 
 ## Usage
