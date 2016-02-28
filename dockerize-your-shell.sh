@@ -39,7 +39,7 @@ if [ "$SESSION_TYPE" != "remote/ssh" ]; then
     docker build --build-arg USERNAME="$USER" --build-arg HOMEDIR="$HOME" -t $DOCKER_IMAGE_NAME .
     #$build_dshell
   fi
-  MYIP=`ipconfig | findstr IPv4 | grep 10. | sed -n -e 's/^.*\:\ //p' `
+  MYIP=`netsh interface ip show addresses "Wi-Fi" | findstr "IP Address" | sed -n -e 's/^.*\:[^0-9]*//p' `
   start_dshell="docker run -it --rm -v $HOME:$HOME/.host -v /var/run/docker.sock:/var/run/docker.sock -e HOSTIP=$MYIP $DOCKER_IMAGE_NAME"
   alias dshell=$start_dshell
   alias dbuild="(cd $DOCKERFILE_PATH && docker build --build-arg USERNAME=$USER --build-arg HOMEDIR=$HOME -t $DOCKER_IMAGE_NAME .)"
