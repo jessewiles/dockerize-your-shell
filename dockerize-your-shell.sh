@@ -3,13 +3,14 @@
 export PS1='osx $ '
 
 # this is to help find commands executed by ssh (non-interactive)
-export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+export PATH="/c/Program Files/Docker Toolbox:/c/Program Files/Git/bin:"$PATH
+export USER=`whoami `
 
 # determine if connected over ssh
 if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
   SESSION_TYPE=remote/ssh
 else
-  case $(ps -o comm= -p $PPID) in
+  case $(ps -p $PPID) in
          sshd|*/sshd) SESSION_TYPE=remote/ssh;;
   esac
 fi
@@ -27,15 +28,18 @@ if [ "$SESSION_TYPE" != "remote/ssh" ]; then
     sleep 3
   fi
   eval "$(docker-machine env $DOCKER_MACHINE_NAME)"
+  build_dshell="(cd $DOCKERFILE_PATH && echo `pwd ` && docker build --build-arg USERNAME="$USER" --build-arg HOMEDIR="$HOME" -t $DOCKER_IMAGE_NAME .)"
   if [ -z "$(docker images -q $DOCKER_IMAGE_NAME)" ]; then
     if [ ! -d $DOCKERFILE_PATH ]; then
       mkdir $DOCKERFILE_PATH
       GIT_URL=https://raw.githubusercontent.com/steveortiz/dockerize-your-shell/master
       curl -sL $GIT_URL"/example/Dockerfile" -o ~/.dockerize-your-shell/Dockerfile
     fi
-    (cd $DOCKERFILE_PATH && docker build --build-arg USERNAME=$USER --build-arg HOMEDIR=$HOME -t $DOCKER_IMAGE_NAME .)
+    cd $DOCKERFILE_PATH
+    docker build --build-arg USERNAME="$USER" --build-arg HOMEDIR="$HOME" -t $DOCKER_IMAGE_NAME .
+    #$build_dshell
   fi
-  MYIP=`ifconfig vboxnet0 | grep 'inet ' | awk '{print $2}'`
+  MYIP=`ipconfig | findstr IPv4 | grep 10. | sed -n -e 's/^.*\:\ //p' `
   start_dshell="docker run -it --rm -v $HOME:$HOME/.host -v /var/run/docker.sock:/var/run/docker.sock -e HOSTIP=$MYIP $DOCKER_IMAGE_NAME"
   alias dshell=$start_dshell
   alias dbuild="(cd $DOCKERFILE_PATH && docker build --build-arg USERNAME=$USER --build-arg HOMEDIR=$HOME -t $DOCKER_IMAGE_NAME .)"
